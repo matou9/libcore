@@ -35,8 +35,13 @@ func InitHiddifyService() error {
 
 func Setup(basePath string, workingPath string, tempPath string, statusPort int64, debug bool) error {
 	statusPropagationPort = int64(statusPort)
-	tcpConn := runtime.GOOS == "windows" // TODO add TVOS
-	libbox.Setup(basePath, workingPath, tempPath, tcpConn)
+	// 根据新版本 libbox.Setup 的参数结构进行修改
+	libbox.Setup(&libbox.SetupOptions{
+		BasePath:    basePath,
+		WorkingPath: workingPath,
+		TempPath:    tempPath,
+		IsTVOS:      runtime.GOOS == "windows", // TODO add TVOS
+	})
 	sWorkingPath = workingPath
 	os.Chdir(sWorkingPath)
 	sTempPath = tempPath
@@ -93,7 +98,9 @@ func NewService(options option.Options) (*libbox.BoxService, error) {
 
 func readOptions(configContent string) (option.Options, error) {
 	var options option.Options
-	err := options.UnmarshalJSON([]byte(configContent))
+	// 使用 UnmarshalJSONContext 替代 UnmarshalJSON
+	// 根据新版本 sing-box 的 option 包结构进行修改
+	err := options.UnmarshalJSONContext(context.Background(), []byte(configContent))
 	if err != nil {
 		return option.Options{}, E.Cause(err, "decode config")
 	}

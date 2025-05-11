@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -215,7 +216,7 @@ func updateConfigInterval(current ConfigResult, hiddifySettingPath string, confi
 
 func readConfigBytes(content []byte) (*option.Options, error) {
 	var options option.Options
-	err := options.UnmarshalJSON(content)
+	err := options.UnmarshalJSONContext(context.Background(), content)
 	if err != nil {
 		return nil, err
 	}

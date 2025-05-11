@@ -1,6 +1,7 @@
 package mobile
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -33,7 +34,7 @@ func BuildConfig(path string, HiddifyOptionsJson string) (string, error) {
 		return "", err
 	}
 	var options option.Options
-	err = options.UnmarshalJSON(fileContent)
+	err = options.UnmarshalJSONContext(context.Background(), fileContent)
 	if err != nil {
 		return "", err
 	}

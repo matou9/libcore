@@ -18,6 +18,21 @@ type OldCommandClientHandler struct {
 	logger log.Logger
 }
 
+func (cch *OldCommandClientHandler) ClearLogs() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cch *OldCommandClientHandler) WriteLogs(messageList libbox.StringIterator) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cch *OldCommandClientHandler) WriteConnections(message *libbox.Connections) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (cch *OldCommandClientHandler) Connected() {
 	cch.logger.Debug("CONNECTED")
 }

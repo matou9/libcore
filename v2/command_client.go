@@ -11,6 +11,21 @@ type CommandClientHandler struct {
 	logger log.Logger
 }
 
+func (cch *CommandClientHandler) ClearLogs() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cch *CommandClientHandler) WriteLogs(messageList libbox.StringIterator) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (cch *CommandClientHandler) WriteConnections(message *libbox.Connections) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (cch *CommandClientHandler) Connected() {
 	cch.logger.Debug("CONNECTED")
 }

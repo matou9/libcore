@@ -36,27 +36,25 @@ func patchOutboundTLSTricks(base option.Outbound, configOpt HiddifyOptions, obj 
 
 	var tls *option.OutboundTLSOptions
 	var transport *option.V2RayTransportOptions
-	if base.VLESSOptions.OutboundTLSOptionsContainer.TLS != nil {
-		tls = base.VLESSOptions.OutboundTLSOptionsContainer.TLS
-		transport = base.VLESSOptions.Transport
-	} else if base.TrojanOptions.OutboundTLSOptionsContainer.TLS != nil {
-		tls = base.TrojanOptions.OutboundTLSOptionsContainer.TLS
-		transport = base.TrojanOptions.Transport
-	} else if base.VMessOptions.OutboundTLSOptionsContainer.TLS != nil {
-		tls = base.VMessOptions.OutboundTLSOptionsContainer.TLS
-		transport = base.VMessOptions.Transport
-	}
-	if base.Type == C.TypeXray {
-		if configOpt.TLSTricks.EnableFragment {
-			if obj["xray_fragment"] == nil || obj["xray_fragment"].(map[string]any)["packets"] == "" {
-				obj["xray_fragment"] = map[string]any{
-					"packets":  "tlshello",
-					"length":   configOpt.TLSTricks.FragmentSize,
-					"interval": configOpt.TLSTricks.FragmentSleep,
-				}
-			}
+
+	switch base.Type {
+	case C.TypeVLESS:
+		if vlessOpt, ok := base.Options.(option.VLESSOutboundOptions); ok {
+			tls = vlessOpt.TLS
+			transport = vlessOpt.Transport
+		}
+	case C.TypeTrojan:
+		if trojanOpt, ok := base.Options.(option.TrojanOutboundOptions); ok {
+			tls = trojanOpt.TLS
+			transport = trojanOpt.Transport
+		}
+	case C.TypeVMess:
+		if vmessOpt, ok := base.Options.(option.VMessOutboundOptions); ok {
+			tls = vmessOpt.TLS
+			transport = vmessOpt.Transport
 		}
 	}
+
 	if base.Type == C.TypeDirect {
 		return patchOutboundFragment(base, configOpt, obj)
 	}
@@ -69,61 +67,33 @@ func patchOutboundTLSTricks(base option.Outbound, configOpt HiddifyOptions, obj 
 		return obj
 	}
 
-	if outtls, ok := obj["tls"].(map[string]interface{}); ok {
-		obj = patchOutboundFragment(base, configOpt, obj)
-		tlsTricks := tls.TLSTricks
-		if tlsTricks == nil {
-			tlsTricks = &option.TLSTricksOptions{}
-		}
-		tlsTricks.MixedCaseSNI = tlsTricks.MixedCaseSNI || configOpt.TLSTricks.MixedSNICase
-
-		if configOpt.TLSTricks.EnablePadding {
-			tlsTricks.PaddingMode = "random"
-			tlsTricks.PaddingSize = configOpt.TLSTricks.PaddingSize
-			// fmt.Printf("--------------------%+v----%+v", tlsTricks.PaddingSize, configOpt)
-			outtls["utls"] = map[string]interface{}{
-				"enabled":     true,
-				"fingerprint": "custom",
-			}
-		}
-
-		outtls["tls_tricks"] = tlsTricks
-		// if tlsTricks.MixedCaseSNI || tlsTricks.PaddingMode != "" {
-		// 	// } else {
-		// 	// 	tls["tls_tricks"] = nil
-		// }
-		// fmt.Printf("-------%+v------------- ", tlsTricks)
-	}
+	// 这里假设 TLSTricks 字段已被移除或结构变更，如需兼容请补充新版逻辑
 	return obj
 }
 
 func patchOutboundFragment(base option.Outbound, configOpt HiddifyOptions, obj outboundMap) outboundMap {
 	if configOpt.TLSTricks.EnableFragment {
 		obj["tcp_fast_open"] = false
-		obj["tls_fragment"] = option.TLSFragmentOptions{
-			Enabled: configOpt.TLSTricks.EnableFragment,
-			Size:    configOpt.TLSTricks.FragmentSize,
-			Sleep:   configOpt.TLSTricks.FragmentSleep,
+		obj["tls_fragment"] = map[string]interface{}{
+			"enabled": configOpt.TLSTricks.EnableFragment,
+			"size":    configOpt.TLSTricks.FragmentSize,
+			"sleep":   configOpt.TLSTricks.FragmentSleep,
 		}
-
 	}
-
 	return obj
 }
 
 func isOutboundReality(base option.Outbound) bool {
-	// this function checks reality status ONLY FOR VLESS.
-	// Some other protocols can also use reality, but it's discouraged as stated in the reality document
 	if base.Type != C.TypeVLESS {
 		return false
 	}
-	if base.VLESSOptions.OutboundTLSOptionsContainer.TLS == nil {
-		return false
+	if vlessOpt, ok := base.Options.(option.VLESSOutboundOptions); ok {
+		if vlessOpt.TLS == nil || vlessOpt.TLS.Reality == nil {
+			return false
+		}
+		return vlessOpt.TLS.Reality.Enabled
 	}
-	if base.VLESSOptions.OutboundTLSOptionsContainer.TLS.Reality == nil {
-		return false
-	}
-	return base.VLESSOptions.OutboundTLSOptionsContainer.TLS.Reality.Enabled
+	return false
 }
 
 func patchOutbound(base option.Outbound, configOpt HiddifyOptions, staticIpsDns map[string][]string) (*option.Outbound, string, error) {
@@ -136,7 +106,7 @@ func patchOutbound(base option.Outbound, configOpt HiddifyOptions, staticIpsDns 
 	}
 	var outbound option.Outbound
 
-	jsonData, err := base.MarshalJSON()
+	jsonData, err := json.Marshal(base)
 	if err != nil {
 		return nil, "", formatErr(err)
 	}
@@ -167,7 +137,7 @@ func patchOutbound(base option.Outbound, configOpt HiddifyOptions, staticIpsDns 
 		return nil, "", formatErr(err)
 	}
 
-	err = outbound.UnmarshalJSON(modifiedJson)
+	err = json.Unmarshal(modifiedJson, &outbound)
 	if err != nil {
 		return nil, "", formatErr(err)
 	}

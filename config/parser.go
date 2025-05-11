@@ -6,10 +6,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
-
-	"github.com/hiddify/ray2sing/ray2sing"
 	"github.com/sagernet/sing-box/experimental/libbox"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common/batch"
@@ -17,6 +13,8 @@ import (
 	"github.com/xmdhs/clash2singbox/convert"
 	"github.com/xmdhs/clash2singbox/model/clash"
 	"gopkg.in/yaml.v3"
+	"os"
+	"path/filepath"
 )
 
 //go:embed config.json.template
@@ -76,10 +74,10 @@ func ParseConfigContent(contentstr string, debug bool, configOpt *HiddifyOptions
 		return patchConfig(newContent, "SingboxParser", configOpt)
 	}
 
-	v2rayStr, err := ray2sing.Ray2Singbox(string(content), configOpt.UseXrayCoreWhenPossible)
-	if err == nil {
-		return patchConfig([]byte(v2rayStr), "V2rayParser", configOpt)
-	}
+	//v2rayStr, err := ray2sing.Ray2Singbox(string(content), configOpt.UseXrayCoreWhenPossible)
+	//if err == nil {
+	//	return patchConfig([]byte(v2rayStr), "V2rayParser", configOpt)
+	//}
 	fmt.Printf("Convert using clash\n")
 	clashObj := clash.Clash{}
 	if err := yaml.Unmarshal(content, &clashObj); err == nil && clashObj.Proxies != nil {

@@ -39,7 +39,7 @@ func (s *server) GenerateFullConfig(ctx context.Context, in *GenerateConfigReque
 		return nil, err
 	}
 	var options option.Options
-	err = options.UnmarshalJSON(content)
+	err = options.UnmarshalJSONContext(ctx, content)
 	if err != nil {
 		return nil, err
 	}

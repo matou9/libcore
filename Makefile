@@ -7,11 +7,9 @@ CLINAME=HiddifyCli
 
 BRANCH=$(shell git branch --show-current)
 VERSION=$(shell git describe --tags || echo "unknown version")
-ifeq ($(OS),Windows_NT)
-Not available for Windows! use bash in WSL
-endif
 
-TAGS=with_gvisor,with_quic,with_wireguard,with_ech,with_utls,with_clash_api,with_grpc
+
+TAGS=with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_grpc
 IOS_ADD_TAGS=with_dhcp,with_low_memory,with_conntrack
 GOBUILDLIB=CGO_ENABLED=1 go build -trimpath -tags $(TAGS) -ldflags="-w -s" -buildmode=c-shared
 GOBUILDSRV=CGO_ENABLED=1 go build -ldflags "-s -w" -trimpath -tags $(TAGS)
@@ -24,8 +22,8 @@ protos:
 
 
 lib_install:
-	go install -v github.com/sagernet/gomobile/cmd/gomobile@v0.1.1
-	go install -v github.com/sagernet/gomobile/cmd/gobind@v0.1.1
+	go install -v github.com/sagernet/gomobile/cmd/gomobile@v0.1.6
+	go install -v github.com/sagernet/gomobile/cmd/gobind@v0.1.6
 	npm install
 
 headers:

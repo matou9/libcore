@@ -36,20 +36,18 @@ func wireGuardToSingbox(wgConfig WarpWireguardConfig, server string, port uint16
 	if len(clientID) < 2 {
 		clientID = []byte{0, 0, 0}
 	}
-	out := T.Outbound{
-		Type: "wireguard",
+	out := option.Outbound{
+		Type: C.TypeWireGuard,
 		Tag:  "WARP",
-		WireGuardOptions: T.WireGuardOutboundOptions{
-			ServerOptions: T.ServerOptions{
+		Options: option.LegacyWireGuardOutboundOptions{
+			ServerOptions: option.ServerOptions{
 				Server:     server,
 				ServerPort: port,
 			},
-
 			PrivateKey:    wgConfig.PrivateKey,
 			PeerPublicKey: wgConfig.PeerPublicKey,
 			Reserved:      []uint8{clientID[0], clientID[1], clientID[2]},
-			// Reserved: []uint8{0, 0, 0},
-			MTU: 1330,
+			MTU:           1330,
 		},
 	}
 	ips := []string{wgConfig.LocalAddressIPv4 + "/24", wgConfig.LocalAddressIPv6 + "/128"}
@@ -60,9 +58,11 @@ func wireGuardToSingbox(wgConfig WarpWireguardConfig, server string, port uint16
 		}
 		prefix, err := netip.ParsePrefix(addr)
 		if err != nil {
-			return nil, err // Handle the error appropriately
+			return nil, err
 		}
-		out.WireGuardOptions.LocalAddress = append(out.WireGuardOptions.LocalAddress, prefix)
+		wgOpt := out.Options.(option.LegacyWireGuardOutboundOptions)
+		wgOpt.LocalAddress = append(wgOpt.LocalAddress, prefix)
+		out.Options = wgOpt
 	}
 	return &out, nil
 }
@@ -107,11 +107,7 @@ func GenerateWarpSingbox(wgConfig WarpWireguardConfig, host string, port uint16,
 		return nil, err
 	}
 
-	singboxConfig.WireGuardOptions.FakePackets = fakePackets
-	singboxConfig.WireGuardOptions.FakePacketsSize = fakePacketsSize
-	singboxConfig.WireGuardOptions.FakePacketsDelay = fakePacketsDelay
-	singboxConfig.WireGuardOptions.FakePacketsMode = fakePacketMode
-
+	singboxConfig.Options = singboxConfig.Options.(option.LegacyWireGuardOutboundOptions)
 	return singboxConfig, nil
 }
 
@@ -175,8 +171,8 @@ func getOrGenerateWarpLocallyIfNeeded(warpOptions *WarpOptions) WarpWireguardCon
 }
 
 func patchWarp(base *option.Outbound, configOpt *HiddifyOptions, final bool, staticIpsDns map[string][]string) error {
-	if base.Type == C.TypeCustom {
-		if warp, ok := base.CustomOptions["warp"].(map[string]interface{}); ok {
+	if base.Type == "custom" {
+		if warp, ok := base.Options.(map[string]interface{})["warp"].(map[string]interface{}); ok {
 			key, _ := warp["key"].(string)
 			host, _ := warp["host"].(string)
 			port, _ := warp["port"].(uint16)
@@ -220,14 +216,16 @@ func patchWarp(base *option.Outbound, configOpt *HiddifyOptions, final bool, sta
 				fmt.Printf("Error generating warp config: %v", err)
 				return err
 			}
-			warpOutbound.WireGuardOptions.Detour = detour
+			wgOpt := warpOutbound.Options.(option.LegacyWireGuardOutboundOptions)
+			wgOpt.Detour = detour
+			warpOutbound.Options = wgOpt
 			base.Type = C.TypeWireGuard
-			base.WireGuardOptions = warpOutbound.WireGuardOptions
+			base.Options = warpOutbound.Options
 		}
 	}
 
 	if final && base.Type == C.TypeWireGuard {
-		host := base.WireGuardOptions.Server
+		host := base.Options.(option.LegacyWireGuardOutboundOptions).Server
 
 		if host == "default" || host == "random" || host == "auto" || host == "auto4" || host == "auto6" || isBlockedDomain(host) {
 			// if base.WireGuardOptions.Detour != "" {
@@ -245,21 +243,24 @@ func patchWarp(base *option.Outbound, configOpt *HiddifyOptions, final bool, sta
 				randomIpPort, _ := warp.RandomWarpEndpoint(true, false)
 				staticIpsDns[rndDomain] = append(staticIpsDns[rndDomain], randomIpPort.Addr().String())
 			}
-			base.WireGuardOptions.Server = rndDomain
+			wgOpt := base.Options.(option.LegacyWireGuardOutboundOptions)
+			wgOpt.Server = rndDomain
+			base.Options = wgOpt
 			// }
 		}
-		if base.WireGuardOptions.ServerPort == 0 {
+		if base.Options.(option.LegacyWireGuardOutboundOptions).ServerPort == 0 {
 			port := warp.RandomWarpPort()
-			base.WireGuardOptions.ServerPort = port
+			wgOpt := base.Options.(option.LegacyWireGuardOutboundOptions)
+			wgOpt.ServerPort = port
+			base.Options = wgOpt
 		}
 
-		if base.WireGuardOptions.Detour != "" {
-			if base.WireGuardOptions.MTU < 100 {
-				base.WireGuardOptions.MTU = 1280
+		if base.Options.(option.LegacyWireGuardOutboundOptions).Detour != "" {
+			wgOpt := base.Options.(option.LegacyWireGuardOutboundOptions)
+			if wgOpt.MTU < 100 {
+				wgOpt.MTU = 1280
 			}
-			base.WireGuardOptions.FakePackets = ""
-			base.WireGuardOptions.FakePacketsDelay = ""
-			base.WireGuardOptions.FakePacketsSize = ""
+			base.Options = wgOpt
 		}
 		// if base.WireGuardOptions.Detour == "" {
 		// 	base.WireGuardOptions.GSO = runtime.GOOS != "windows"

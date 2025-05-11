@@ -7,7 +7,7 @@ import (
 var (
 	oldStatusClient        *libbox.CommandClient
 	oldGroupClient         *libbox.CommandClient
-	oldGroupInfoOnlyClient *libbox.CommandClient
+	// oldGroupInfoOnlyClient *libbox.CommandClient
 )
 
 func StartCommand(command int32, port int64) error {
@@ -36,18 +36,21 @@ func StartCommand(command int32, port int64) error {
 			},
 		)
 		return oldGroupClient.Connect()
-	case libbox.CommandGroupInfoOnly:
-		oldGroupInfoOnlyClient = libbox.NewCommandClient(
-			&OldCommandClientHandler{
-				port:   port,
-				logger: coreLogFactory.NewLogger("[GroupInfoOnly Command Client]"),
-			},
-			&libbox.CommandClientOptions{
-				Command:        libbox.CommandGroupInfoOnly,
-				StatusInterval: 300000000, //300ms debounce
-			},
-		)
-		return oldGroupInfoOnlyClient.Connect()
+	// case libbox.CommandGroupInfoOnly:
+		// TODO: 后续需补充 CommandGroupInfoOnly 相关实现
+		/*
+			oldGroupInfoOnlyClient = libbox.NewCommandClient(
+				&OldCommandClientHandler{
+					port:   port,
+					logger: coreLogFactory.NewLogger("[GroupInfoOnly Command Client]"),
+				},
+				&libbox.CommandClientOptions{
+					Command:        libbox.CommandGroupInfoOnly,
+					StatusInterval: 300000000, //300ms debounce
+				},
+			)
+			return oldGroupInfoOnlyClient.Connect()
+		*/
 	}
 	return nil
 }
@@ -62,10 +65,13 @@ func StopCommand(command int32) error {
 		err := oldGroupClient.Disconnect()
 		oldGroupClient = nil
 		return err
-	case libbox.CommandGroupInfoOnly:
-		err := oldGroupInfoOnlyClient.Disconnect()
-		oldGroupInfoOnlyClient = nil
-		return err
+	// case libbox.CommandGroupInfoOnly:
+		// TODO: 后续需补充 CommandGroupInfoOnly 相关实现
+		/*
+			err := oldGroupInfoOnlyClient.Disconnect()
+			oldGroupInfoOnlyClient = nil
+			return err
+		*/
 	}
 	return nil
 }
