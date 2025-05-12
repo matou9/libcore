@@ -23,6 +23,7 @@ require (
 )
 
 require (
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca
 	github.com/tendermint/tm-db v0.6.7
 )
@@ -162,6 +163,8 @@ require (
 )
 
 replace github.com/sagernet/sing-box => github.com/matou9/sing-box v1.12.0-beta.12
+
+replace github.com/hiddify/hiddify-ip-scanner-extension => github.com/matou9/hiddify-ip-scanner-extension v1.0.0
 
 replace github.com/cognusion/go-cache-lru => ./stubs/go-cache-lru
 

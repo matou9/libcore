@@ -3,6 +3,7 @@ package mobile
 import (
 	"context"
 	"encoding/json"
+	"github.com/hiddify/hiddify-core/utils"
 	"os"
 	"path/filepath"
 
@@ -24,12 +25,15 @@ func Parse(path string, tempPath string, debug bool) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, config, 0o644)
+	return utils.SaveToFile(config, path)
+	//return os.WriteFile(path, config, 0o644)
 }
 
 func BuildConfig(path string, HiddifyOptionsJson string) (string, error) {
 	os.Chdir(filepath.Dir(path))
-	fileContent, err := os.ReadFile(path)
+	raw, err := utils.LoadFromFile(path)
+	fileContent := raw.Raw
+	//fileContent, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}

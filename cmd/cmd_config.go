@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -120,7 +121,7 @@ func readConfigAt(path string) (*option.Options, error) {
 		return nil, err
 	}
 	var options option.Options
-	err = options.UnmarshalJSON(content)
+	err = options.UnmarshalJSONContext(context.Background(), content)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +130,7 @@ func readConfigAt(path string) (*option.Options, error) {
 
 func readConfigBytes(content []byte) (*option.Options, error) {
 	var options option.Options
-	err := options.UnmarshalJSON(content)
+	err := options.UnmarshalJSONContext(context.Background(), content)
 	if err != nil {
 		return nil, err
 	}

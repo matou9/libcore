@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hiddify/hiddify-core/utils"
 	"os"
 	"path/filepath"
 	"time"
@@ -76,9 +77,11 @@ func StartService(in *pb.StartRequest) (*pb.CoreInfoResponse, error) {
 	Log(pb.LogLevel_DEBUG, pb.LogType_CORE, "Starting Core Service")
 	content := in.ConfigContent
 	if content == "" {
-
-		activeConfigPath = in.ConfigPath
-		fileContent, err := os.ReadFile(activeConfigPath)
+		raw, err := utils.LoadFromFile(in.ConfigPath)
+		fileContent := raw.Raw
+		Log(pb.LogLevel_DEBUG, pb.LogType_CORE, string(fileContent))
+		//activeConfigPath = in.ConfigPath
+		//fileContent, err := os.ReadFile(activeConfigPath)
 		if err != nil {
 			Log(pb.LogLevel_FATAL, pb.LogType_CORE, err.Error())
 			resp := SetCoreStatus(pb.CoreState_STOPPED, pb.MessageType_ERROR_READING_CONFIG, err.Error())
@@ -111,7 +114,9 @@ func StartService(in *pb.StartRequest) (*pb.CoreInfoResponse, error) {
 	}
 	Log(pb.LogLevel_DEBUG, pb.LogType_CORE, "Saving config")
 	currentBuildConfigPath := filepath.Join(sWorkingPath, "current-config.json")
-	config.SaveCurrentConfig(currentBuildConfigPath, parsedContent)
+	//加密形式保存配置文件
+	utils.SaveToFile(parsedContent, currentBuildConfigPath)
+	//config.SaveCurrentConfig(currentBuildConfigPath, parsedContent)
 	if activeConfigPath == "" {
 		activeConfigPath = currentBuildConfigPath
 	}
@@ -184,7 +189,9 @@ func Parse(in *pb.ParseRequest) (*pb.ParseResponse, error) {
 		}, err
 	}
 	if in.ConfigPath != "" {
-		err = os.WriteFile(in.ConfigPath, config, 0o644)
+		err = utils.SaveToFile(config, in.ConfigPath)
+		//fmt.Println("SaveToFile", in.ConfigPath, "content=", config)
+		//err = os.WriteFile(in.ConfigPath, config, 0o644)
 		if err != nil {
 			return &pb.ParseResponse{
 				ResponseCode: pb.ResponseCode_FAILED,

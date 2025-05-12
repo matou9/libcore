@@ -6,6 +6,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/hiddify/hiddify-core/utils"
 	"github.com/sagernet/sing-box/experimental/libbox"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing/common/batch"
@@ -21,7 +22,9 @@ import (
 var configByte []byte
 
 func ParseConfig(path string, debug bool) ([]byte, error) {
-	content, err := os.ReadFile(path)
+	raw, err := utils.LoadFromFile(path)
+	content := raw.Raw
+	//content, err := os.ReadFile(path)
 	os.Chdir(filepath.Dir(path))
 	if err != nil {
 		return nil, err

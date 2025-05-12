@@ -100,9 +100,10 @@ func readOptions(configContent string) (option.Options, error) {
 	var options option.Options
 	// 使用 UnmarshalJSONContext 替代 UnmarshalJSON
 	// 根据新版本 sing-box 的 option 包结构进行修改
+	log.Debug("readOptions=", configContent)
 	err := options.UnmarshalJSONContext(context.Background(), []byte(configContent))
 	if err != nil {
-		return option.Options{}, E.Cause(err, "decode config")
+		return option.Options{}, E.Cause(err, "readOptions decode config")
 	}
 	return options, nil
 }
