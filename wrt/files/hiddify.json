@@ -1,6 +1,6 @@
 {
 	"region": "ir",
-	"web-secret": "your-hidden-secret",
+	"web-secret": "guichaovpn2025",
 	"enable-tun": true,
 	"mixed-port": 2334,
 	"tproxy-port": 2335,
@@ -17,7 +17,7 @@
 	"log-level": "warn",
 	"resolve-destination": false,
 	"ipv6-mode": "ipv4_only",
-	"remote-dns-address": "udp://1.1.1.1",
+	"remote-dns-address": "1.1.1.1",
 	"remote-dns-domain-strategy": "ipv4_only",
 	"direct-dns-address": "1.1.1.1",
 	"direct-dns-domain-strategy": "ipv4_only",

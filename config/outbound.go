@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sagernet/sing-box/experimental/libbox"
 	"net"
 
 	C "github.com/sagernet/sing-box/constant"
@@ -105,8 +106,7 @@ func patchOutbound(base option.Outbound, configOpt HiddifyOptions, staticIpsDns 
 		return nil, "", formatErr(err)
 	}
 	var outbound option.Outbound
-
-	jsonData, err := json.Marshal(base)
+	jsonData, err := base.MarshalJSONContext(libbox.BaseContext(nil))
 	if err != nil {
 		return nil, "", formatErr(err)
 	}
@@ -137,11 +137,10 @@ func patchOutbound(base option.Outbound, configOpt HiddifyOptions, staticIpsDns 
 		return nil, "", formatErr(err)
 	}
 
-	err = json.Unmarshal(modifiedJson, &outbound)
+	err = outbound.UnmarshalJSONContext(libbox.BaseContext(nil), modifiedJson)
 	if err != nil {
 		return nil, "", formatErr(err)
 	}
-
 	return &outbound, serverDomain, nil
 }
 

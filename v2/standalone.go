@@ -1,9 +1,9 @@
 package v2
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/sagernet/sing-box/experimental/libbox"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -216,7 +216,8 @@ func updateConfigInterval(current ConfigResult, hiddifySettingPath string, confi
 
 func readConfigBytes(content []byte) (*option.Options, error) {
 	var options option.Options
-	err := options.UnmarshalJSONContext(context.Background(), content)
+	ctx := libbox.BaseContext(nil)
+	err := options.UnmarshalJSONContext(ctx, content)
 	if err != nil {
 		return nil, err
 	}

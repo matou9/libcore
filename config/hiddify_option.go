@@ -99,7 +99,7 @@ func DefaultHiddifyOptions() *HiddifyOptions {
 		DNSOptions: DNSOptions{
 			RemoteDnsAddress:        "1.1.1.1",
 			RemoteDnsDomainStrategy: option.DomainStrategy(dns.DomainStrategyAsIS),
-			DirectDnsAddress:        "1.1.1.1",
+			DirectDnsAddress:        "8.8.8.8",
 			DirectDnsDomainStrategy: option.DomainStrategy(dns.DomainStrategyAsIS),
 			IndependentDNSCache:     false,
 			EnableFakeDNS:           false,
@@ -128,9 +128,9 @@ func DefaultHiddifyOptions() *HiddifyOptions {
 		},
 		LogLevel: "warn",
 		// LogFile:        "/dev/null",
-		LogFile:        "box.log",
+		LogFile:        "guichao.log",
 		Region:         "other",
-		EnableClashApi: true,
+		EnableClashApi: false,
 		ClashApiPort:   16756,
 		ClashApiSecret: "",
 		// GeoIPPath:      "geoip.db",
@@ -151,5 +151,8 @@ func DefaultHiddifyOptions() *HiddifyOptions {
 			PaddingSize:    "1200-1500",
 		},
 		UseXrayCoreWhenPossible: false,
+		//调试用
+		BlockAds: false,
+		//调试用
 	}
 }

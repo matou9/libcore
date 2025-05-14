@@ -1,24 +1,15 @@
 package v2
 
 import (
-	"context"
-	"io"
-	"os"
-	"runtime"
-	runtimeDebug "runtime/debug"
-	"time"
-
 	"github.com/hiddify/hiddify-core/v2/service_manager"
-
-	B "github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/common/urltest"
 	"github.com/sagernet/sing-box/experimental/libbox"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
 	E "github.com/sagernet/sing/common/exceptions"
-	"github.com/sagernet/sing/service"
-	"github.com/sagernet/sing/service/filemanager"
-	"github.com/sagernet/sing/service/pause"
+	"io"
+	"os"
+	"runtime"
+	"time"
 )
 
 var (
@@ -72,38 +63,18 @@ func Setup(basePath string, workingPath string, tempPath string, statusPort int6
 }
 
 func NewService(options option.Options) (*libbox.BoxService, error) {
-	runtimeDebug.FreeOSMemory()
-	ctx, cancel := context.WithCancel(context.Background())
-	ctx = filemanager.WithDefault(ctx, sWorkingPath, sTempPath, sUserID, sGroupID)
-	urlTestHistoryStorage := urltest.NewHistoryStorage()
-	ctx = service.ContextWithPtr(ctx, urlTestHistoryStorage)
-	instance, err := B.New(B.Options{
-		Context: ctx,
-		Options: options,
-	})
-	if err != nil {
-		cancel()
-		return nil, E.Cause(err, "create service")
-	}
-	runtimeDebug.FreeOSMemory()
-	service := libbox.NewBoxService(
-		ctx,
-		cancel,
-		instance,
-		service.FromContext[pause.Manager](ctx),
-		urlTestHistoryStorage,
-	)
-	return &service, nil
+	return libbox.NewGuiChaoService(options)
 }
 
 func readOptions(configContent string) (option.Options, error) {
 	var options option.Options
-	// 使用 UnmarshalJSONContext 替代 UnmarshalJSON
-	// 根据新版本 sing-box 的 option 包结构进行修改
-	log.Debug("readOptions=", configContent)
-	err := options.UnmarshalJSONContext(context.Background(), []byte(configContent))
+	ctx := libbox.BaseContext(nil)
+	err := options.UnmarshalJSONContext(ctx, []byte(configContent))
 	if err != nil {
 		return option.Options{}, E.Cause(err, "readOptions decode config")
 	}
+	// 使用 UnmarshalJSONContext 替代 UnmarshalJSON
+	// 根据新版本 sing-box 的 option 包结构进行修改
+	//fmt.Print("readOptions=", string(options.RawMessage))
 	return options, nil
 }

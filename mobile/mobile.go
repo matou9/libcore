@@ -1,9 +1,9 @@
 package mobile
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/hiddify/hiddify-core/utils"
+	"github.com/sagernet/sing-box/experimental/libbox"
 	"os"
 	"path/filepath"
 
@@ -38,7 +38,8 @@ func BuildConfig(path string, HiddifyOptionsJson string) (string, error) {
 		return "", err
 	}
 	var options option.Options
-	err = options.UnmarshalJSONContext(context.Background(), fileContent)
+	ctx := libbox.BaseContext(nil)
+	err = options.UnmarshalJSONContext(ctx, fileContent)
 	if err != nil {
 		return "", err
 	}

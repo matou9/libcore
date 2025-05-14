@@ -114,8 +114,9 @@ func StartService(in *pb.StartRequest) (*pb.CoreInfoResponse, error) {
 	}
 	Log(pb.LogLevel_DEBUG, pb.LogType_CORE, "Saving config")
 	currentBuildConfigPath := filepath.Join(sWorkingPath, "current-config.json")
-	//加密形式保存配置文件
-	utils.SaveToFile(parsedContent, currentBuildConfigPath)
+	//加密形式保存配置文件,要用rawmessage,否则option的某些outbound解析不出来
+	fmt.Println("start service configcontent=", parsedContent, "rawmessage=")
+	utils.SaveToFile(parsedContent.RawMessage, currentBuildConfigPath)
 	//config.SaveCurrentConfig(currentBuildConfigPath, parsedContent)
 	if activeConfigPath == "" {
 		activeConfigPath = currentBuildConfigPath
